@@ -1,0 +1,10 @@
+from django.apps import AppConfig
+
+
+class ServersConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'servers'
+    verbose_name = 'سرورها'
+
+    def ready(self):
+        import servers.signals 

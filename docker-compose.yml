@@ -1,0 +1,84 @@
+
+services:
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+
+  web:
+    build: .
+    restart: on-failure
+    volumes:
+      - ./:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - ./logs:/app/logs
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - APPLICATION_IN_PRODUCTION=${APPLICATION_IN_PRODUCTION}
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+    command: >
+      sh -c "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn --bind 0.0.0.0:8000 --workers 4 --timeout 60 --max-requests 1000 --max-requests-jitter 50 --worker-class gthread --worker-tmp-dir /dev/shm config.wsgi:application"
+    depends_on:
+      - db
+      - redis
+
+  celery:
+    build: .
+    volumes:
+      - ./:/app
+      - ./logs:/app/logs
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+    command: python -m celery -A config worker -l info
+    
+    depends_on:
+      - redis
+      - db
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot
+      --email koosha.bagherzadeh@gmail.com
+      --agree-tos --no-eff-email
+      --keep-until-expiring
+      -d panel.easylifee.shop
+
+volumes:
+  postgres_data:
+  redis_data:
+  static_volume:
+  media_volume:
+  certbot_www:
+  certbot_certs:
