@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from .models import Client
 from servers.models import Server
@@ -16,3 +16,10 @@ def create_user_on_servers(sender, instance, created, **kwargs):
             if success:
                 ssh.setup_traffic_rules(instance.username)
                 instance.servers.add(server)
+
+
+@receiver(pre_delete, sender=Client)
+def delete_user_from_servers(sender, instance, **kwargs):
+    for server in instance.servers.all():
+        ssh = SSHService(server)
+        ssh.delete_user(instance.username)
