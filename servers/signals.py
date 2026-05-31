@@ -12,8 +12,6 @@ def create_existing_users_on_new_server(sender, instance, created, **kwargs):
         clients = Client.objects.filter(is_active=True, servers=None) | \
                   Client.objects.filter(is_active=True)
 
-        # فقط کلاینت‌هایی که این سرور رو دارن
-        # چون سرور تازه ساخته شده، باید همه کلاینت‌های فعال رو بسازیم
         all_active_clients = Client.objects.filter(is_active=True)
         ssh = SSHService(instance)
         for client in all_active_clients:
