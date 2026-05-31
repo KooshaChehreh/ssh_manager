@@ -17,6 +17,6 @@ def create_existing_users_on_new_server(sender, instance, created, **kwargs):
         all_active_clients = Client.objects.filter(is_active=True)
         ssh = SSHService(instance)
         for client in all_active_clients:
-            ssh.create_user(client.username, client.password)
+            ssh.create_user(client.username, client.password, client.expire_date)
             ssh.setup_traffic_rules(client.username)
             client.servers.add(instance)
