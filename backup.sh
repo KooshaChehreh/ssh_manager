@@ -41,7 +41,7 @@ trap 'log "خطا در خط $LINENO. بکاپ ناتمام ماند."' ERR
 mkdir -p "${TMP_DIR}"
 
 TIMESTAMP="$(date '+%Y%m%d_%H%M%S')"
-FILENAME="${DB_NAME}_${TIMESTAMP}.sql.gz"
+FILENAME="panel_${DB_NAME}_${TIMESTAMP}.sql.gz"
 TMP_FILE="${TMP_DIR}/${FILENAME}"
 
 log "شروع بکاپ‌گیری از دیتابیس '${DB_NAME}'..."

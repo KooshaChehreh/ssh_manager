@@ -26,7 +26,7 @@ else
     echo "Building WITH cache..."
 fi
 
-sshpass -p "$SSH_PASSWORD" ssh "$REMOTE_USER@$REMOTE_HOST" "cd $REMOTE_DIR && docker compose down && sudo docker compose build $BUILD_FLAGS && docker compose up -d"
+sshpass -p "$SSH_PASSWORD" ssh "$REMOTE_USER@$REMOTE_HOST" "cd $REMOTE_DIR && chmod +x backup.sh && docker compose down && sudo docker compose build $BUILD_FLAGS && docker compose up -d"
 
 echo "Done."
 
