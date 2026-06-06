@@ -44,6 +44,34 @@ class SSHService:
         finally:
             self.disconnect()
 
+    def update_user(self, username, password, expire_date):
+        try:
+            self.connect()
+
+            cmds = []
+
+            # تغییر رمز عبور
+            if password:
+                cmds.append(f"echo '{username}:{password}' | sudo chpasswd")
+
+            # تغییر تاریخ انقضا
+            if expire_date:
+                cmds.append(
+                    f"sudo usermod -e {expire_date.strftime('%Y-%m-%d')} {username}"
+                )
+
+            if not cmds:
+                return True, "Nothing to update"
+
+            cmd = " && ".join(cmds)
+            out, err = self.run_command(cmd)
+
+            return True, out or err
+        except Exception as e:
+            return False, str(e)
+        finally:
+            self.disconnect()
+
 
     def delete_user(self, username):
         try:
